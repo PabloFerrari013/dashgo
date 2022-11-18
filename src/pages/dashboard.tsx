@@ -37,13 +37,22 @@ const Dashboard: React.FC = () => {
       },
       categories: [
         '2022-11-10T00:00:00.000z',
-        '2022-12-10T00:00:00.000z',
-        '2022-13-10T00:00:00.000z',
-        '2022-14-10T00:00:00.000z',
-        '2022-15-10T00:00:00.000z',
-        '2022-16-10T00:00:00.000z',
-        '2022-17-10T00:00:00.000z'
+        '2022-11-11T00:00:00.000z',
+        '2022-11-12T00:00:00.000z',
+        '2022-11-13T00:00:00.000z',
+        '2022-11-14T00:00:00.000z',
+        '2022-11-15T00:00:00.000z',
+        '2022-11-16T00:00:00.000z'
       ]
+    },
+    fill: {
+      opacity: 0.3,
+      type: 'gradient',
+      gradient: {
+        shade: 'dark',
+        opacityFrom: 0.7,
+        opacityTo: 0.3
+      }
     }
   }
 
@@ -67,7 +76,7 @@ const Dashboard: React.FC = () => {
           minChildWidth="320px"
           alignItems="flex-start"
         >
-          <Box p="8" bg="gray.800" borderRadius={8}>
+          <Box p={['6', '8']} bg="gray.800" borderRadius={8} pb="4">
             <Text fontSize="large" mb="4">
               Inscritos da semana
             </Text>
@@ -75,10 +84,12 @@ const Dashboard: React.FC = () => {
             <Chart options={options} series={series} type="area" height={160} />
           </Box>
 
-          <Box p="8" bg="gray.800" borderRadius={8}>
+          <Box p="8" bg="gray.800" borderRadius={8} pb="4">
             <Text fontSize="large" mb="4">
               taxa de abertura
             </Text>
+
+            <Chart options={options} series={series} type="area" height={160} />
           </Box>
         </SimpleGrid>
       </Flex>
