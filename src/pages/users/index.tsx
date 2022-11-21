@@ -14,23 +14,53 @@ import {
   Th,
   Thead,
   Tr,
-  useBreakpointValue
+  useBreakpointValue,
+  UseQueryProps
 } from '@chakra-ui/react'
+import { GetServerSideProps } from 'next'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 import { RiAddLine, RiPencilLine } from 'react-icons/ri'
+import { UseQueryOptions, UseQueryResult } from 'react-query'
 import Header from '../../components/Header'
 import Pagination from '../../components/Pagination'
 import SideBar from '../../components/Sidebar'
-import { useUsers } from '../../services/hooks/useUsers'
+import { api } from '../../services/api'
+import { getUsers, useUsers } from '../../services/hooks/useUsers'
+import { queryClient } from '../../services/queryClient'
 
-const UserList: React.FC = () => {
-  const { data, isLoading, error, isFetching } = useUsers()
+interface UserListParams {
+  users: {
+    id: string
+    name: string
+    email: string
+  }[]
+  totalCount: number
+}
+
+export default function UserList({ users }: UserListParams) {
+  const [page, setPage] = useState(1)
+
+  const { data, isLoading, error, isFetching } = useUsers(page, {
+    initialData: users
+  })
 
   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true
   })
+
+  async function handlePrefetchUser(userId: string) {
+    await queryClient.prefetchQuery(
+      ['user', userId],
+      async function () {
+        const response = api.get(`user/${userId}`)
+
+        return response
+      },
+      { staleTime: 1000 * 60 * 10 }
+    )
+  }
 
   return (
     <Box>
@@ -86,7 +116,7 @@ const UserList: React.FC = () => {
                 </Thead>
 
                 <Tbody>
-                  {data?.map(user => (
+                  {data?.users.map(user => (
                     <Tr key={user.id}>
                       <Td px={['4', '4', '6']}>
                         <Checkbox colorScheme="pink" />
@@ -94,7 +124,12 @@ const UserList: React.FC = () => {
 
                       <Td>
                         <Box>
-                          <Text fontWeight="bold">{user.name}</Text>
+                          <Box onBlur={() => handlePrefetchUser(user.id)}>
+                            <Link href="/">
+                              <Text fontWeight="bold">{user.name}</Text>
+                            </Link>
+                          </Box>
+
                           <Text fontSize="small" color="gray.300">
                             {user.email}
                           </Text>
@@ -131,9 +166,9 @@ const UserList: React.FC = () => {
               </Table>
 
               <Pagination
-                totalCountOfRegisters={200}
-                currentPage={5}
-                onPageChange={() => {}}
+                totalCountOfRegisters={data.totalCount}
+                currentPage={page}
+                onPageChange={setPage}
               />
             </>
           )}
@@ -143,4 +178,12 @@ const UserList: React.FC = () => {
   )
 }
 
-export default UserList
+export const getServerSideProps: GetServerSideProps = async () => {
+  const { users, totalCount } = await getUsers(1)
+
+  return {
+    props: {
+      users
+    }
+  }
+}

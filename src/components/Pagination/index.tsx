@@ -1,4 +1,4 @@
-import { Box, Stack } from '@chakra-ui/react'
+import { Box, Stack, Text } from '@chakra-ui/react'
 import React from 'react'
 import PaginationItem from './PaginationItem'
 
@@ -6,7 +6,7 @@ interface PaginationProps {
   totalCountOfRegisters: number
   registersPerPage?: number
   currentPage?: number
-  onPageChange?: (page: number) => void
+  onPageChange?: React.Dispatch<React.SetStateAction<number>>
 }
 
 const siblingsCount = 1
@@ -14,7 +14,7 @@ const siblingsCount = 1
 function generatePagesArray(from: number, to: number) {
   return [...new Array(to - from)]
     .map((_, index) => {
-      return from * index + 1
+      return from + index + 1
     })
     .filter(page => page > 0)
 }
@@ -53,17 +53,54 @@ const Pagination: React.FC<PaginationProps> = ({
       </Box>
 
       <Stack direction="row" spacing="2">
+        {currentPage > 1 + siblingsCount && (
+          <>
+            <PaginationItem onPageChange={onPageChange} number={1} />
+            {currentPage > 2 + siblingsCount && (
+              <Text color="gray.300" w="8" textAlign="center">
+                ...
+              </Text>
+            )}
+          </>
+        )}
+
         {previousPages.length > 0 &&
           previousPages.map(page => (
-            <PaginationItem key={page} number={page} />
+            <PaginationItem
+              onPageChange={onPageChange}
+              key={page}
+              number={page}
+            />
           ))}
 
-        <PaginationItem number={currentPage} isCurrent={true} />
+        <PaginationItem
+          onPageChange={onPageChange}
+          number={currentPage}
+          isCurrent={true}
+        />
 
         {nextPages.length > 0 &&
           nextPages.map(page => {
-            return <PaginationItem key={page} number={page} />
+            return (
+              <PaginationItem
+                onPageChange={onPageChange}
+                key={page}
+                number={page}
+              />
+            )
           })}
+
+        {currentPage + siblingsCount < lastPage && (
+          <>
+            {currentPage + 1 + siblingsCount < lastPage && (
+              <Text color="gray.300" w="8" textAlign="center">
+                ...
+              </Text>
+            )}
+
+            <PaginationItem onPageChange={onPageChange} number={lastPage} />
+          </>
+        )}
       </Stack>
     </Stack>
   )
